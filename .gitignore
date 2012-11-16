@@ -12,6 +12,8 @@ logs
 results
 node_modules/
 d/
+cache/
+64bit/
 npm-debug.log
 
 
@@ -123,3 +125,19 @@ UpgradeLog*.XML
 
 # NuGet
 packages/
+
+# JVM
+target/
+/.lib/
+
+*~
+/.ensime
+
+/.cache
+/.classpath
+/.project
+/.settings/
+.idea/
+.idea_modules/
+
+*.sublime-workspace

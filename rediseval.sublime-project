@@ -1,0 +1,11 @@
+{
+	"folders":
+	[
+		{
+			"path": ".",
+      "name": "root",
+      "folder_exclude_patterns": ["old", ".idea*", "target", "project"],
+      "file_exclude_patterns": ["*.*-workspace"]
+		}
+	]
+}

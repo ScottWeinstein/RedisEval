@@ -35,6 +35,9 @@
     <StartupObject>Benchmark</StartupObject>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="BookSleeve">
+      <HintPath>packages\BookSleeve.1.2.0.2\lib\BookSleeve.dll</HintPath>
+    </Reference>
     <Reference Include="Dapper">
       <HintPath>packages\Dapper.1.12.1\lib\net40\Dapper.dll</HintPath>
     </Reference>
