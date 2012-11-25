@@ -14,7 +14,6 @@ import spray.client.HttpConduit
 import spray.http._
 import spray.io._
 import spray.util._
-import redis.clients.jedis.{JedisPool, Jedis, JedisPoolConfig}
 
 object Indexer extends App {
   implicit val system = ActorSystem("idx")
@@ -55,9 +54,7 @@ object Indexer extends App {
     }
   }
 
-  def ioStreamtoBBSymbols(pool: JedisPool, st: java.io.InputStream) = {
-    val jedis = pool.getResource()
-
+  def ioStreamtoBBSymbols(sinks: List[() => BBSymbolPersist], st: java.io.InputStream) = {
     try {
       val in = scala.io.Source.fromInputStream(st)
 
@@ -65,29 +62,29 @@ object Indexer extends App {
         line <- in.getLines
         if (!(line.startsWith("#") || line.startsWith("NAME|ID_BB_SEC_NUM_DES|FEED_SOURCE|")))
         } yield BBSymbol(line)
-      
+
       var count = 0
         for (sym <- syms) {
-          val key = "symbols:" + sym.ID_BB_GLOBAL
-          if (!jedis.exists(key)) {
-            jedis.hmset(key, sym.toHashMap)
-            count = count + 1
-          }
+          count = count + 1
+          for (sinkF <- sinks) {
+           val sink = sinkF()
+           try { 
+             sink.save(sym)
+           } finally {
+             sink.close()
+           }
         }
+      }
       count
     }
     finally {
       st.close
-      pool.returnResourceObject(jedis)
     }
   }
 
   def startExample1() {
     import collection.JavaConverters._
     val sf = SymbolFile("")
-    val config = new JedisPoolConfig()
-    config.setMaxIdle(5 * 1000)
-    val pool = new JedisPool(config, "localhost")
     (new java.io.File(sf.cacheLocation)).mkdir()
     
     val conduit = system.actorOf(props = Props(new HttpConduit(httpClient, sf.host)))
@@ -98,17 +95,21 @@ object Indexer extends App {
     val lsOfSomething = listOfFutureZipFiles map { fzipFileName => fzipFileName map { zipFileName => {
        val rootzip = new java.util.zip.ZipFile(zipFileName)
        val entries = rootzip.entries.asScala
-       val counts = entries map { ze => ioStreamtoBBSymbols(pool, rootzip.getInputStream(ze))}
-       counts.sum
+       val counts = entries map { ze => ioStreamtoBBSymbols(PersistanceFactories.sinks, rootzip.getInputStream(ze))}
+       val sum = counts.sum
+       println(sum)
+       sum
       }
     }
     }
     
     val futureList = Future.sequence(lsOfSomething)
-    Await.result(futureList, 2000 second)
+    val listSums = Await.result(futureList, 20000 second)
+
     system.stop(conduit)
     system.shutdown
-    pool.destroy
+    
+    println(listSums.sum)
   }
 
   

@@ -12,7 +12,7 @@ resolvers ++= Seq(
 libraryDependencies ++= Seq(
   "io.spray" % "spray-client" % "1.0-M5",
   "com.typesafe.akka" % "akka-actor" % "2.0.3",
-  "org.squeryl" %% "squeryl" % "0.9.5-2",
+  "org.squeryl" %% "squeryl" % "0.9.5-3",
   "net.sourceforge.jtds" % "jtds" % "1.2.4",
   "redis.clients" % "jedis" % "2.1.0",
   "org.scalatest" %% "scalatest" % "2.0.M5" % "test"
