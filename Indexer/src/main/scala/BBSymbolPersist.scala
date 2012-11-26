@@ -45,6 +45,7 @@ object BBSymbolSchema extends Schema {
 
 class SqlBBPersist() extends BBSymbolPersist { 
     val newSession = SessionFactory.newSession
+    println("newSession")
 
     def save(sym: BBSymbol) = {
       using(newSession) {
@@ -52,7 +53,10 @@ class SqlBBPersist() extends BBSymbolPersist {
       }
     }
 
-    def close = newSession.cleanup
+    def close = {
+      println("cleanup session")
+      newSession.cleanup
+    }
 }
 
 object SqlBBPersist {
@@ -70,14 +74,12 @@ object SqlBBPersist {
   }
 }
 
-
-
 object PersistanceFactories {
   println(SqlBBPersist.dbUsername)
-   transaction {
-    println(BBSymbolSchema.printDdl)
-    BBSymbolSchema.create
-  }
+  //  transaction {
+  //   println(BBSymbolSchema.printDdl)
+  //   BBSymbolSchema.create
+  // }
   
   // val sinks = List(RedisbbPersist.sink, SqlBBPersist.sink)
   val sinks = List(SqlBBPersist.sink)
